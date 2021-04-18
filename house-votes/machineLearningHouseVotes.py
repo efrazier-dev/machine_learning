@@ -1,5 +1,6 @@
 # https://machinelearningmastery.com/machine-learning-in-python-step-by-step/
 
+
 # Load libraries
 import pandas
 from pandas.plotting import scatter_matrix
@@ -16,6 +17,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 import numpy as np
 
+# https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records
 # Load dataset
 url = "house-votes-84.data"
 
