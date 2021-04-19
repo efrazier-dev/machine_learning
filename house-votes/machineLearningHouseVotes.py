@@ -15,6 +15,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn import preprocessing
 import numpy as np
 
 # https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records
@@ -39,36 +41,29 @@ print('\n\n')
 print(dataset.groupby('Class Name').size())
 print('\n\n')
 
-# TODO use label encoder instead??
+# dict of label encoders
+labelEncoders = {}
+
+
 def handle_non_numerical_data(df):
     columns = df.columns.values
     for column in columns:
-        text_digit_vals = {}
-        def convert_to_int(val):
-            return text_digit_vals[val]
-
         if df[column].dtype != np.int64 and df[column].dtype != np.float64:
+            le = preprocessing.LabelEncoder()           
             column_contents = df[column].values.tolist()
-            unique_elements = set(column_contents)
-            x = 0
-            for unique in unique_elements:
-                if unique not in text_digit_vals:
-                    text_digit_vals[unique] = x
-                    x+=1
-
-            df[column] = list(map(convert_to_int, df[column]))
+            le.fit(column_contents)
+            df[column] = le.transform(column_contents)
             
-            if column == 'Class Name':
-                print('party mapping:')
-                print(text_digit_vals)
-                print('\n')
+            # each column gets own label encoder
+            labelEncoders[column] = le
     return df
+
 
 
 
 dataset = handle_non_numerical_data(dataset)
 
-spot_check_record = 9
+spot_check_record = 19
 # strip single instance from dataset for spot checking prediction later
 single_instance = dataset.loc[[spot_check_record]]
 # drop index 
@@ -90,8 +85,8 @@ single_instance_class = single_instance.values[:,0]
 ####plt.show()
 
 # histograms
-dataset.hist()
-plt.show()
+#####dataset.hist()
+#####plt.show()
 
 # scatter plot matrix
 ####scatter_matrix(dataset)
@@ -122,10 +117,10 @@ models = []
 models.append(('LR', LogisticRegression()))
 models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
-models.append(('CART', DecisionTreeClassifier()))
+models.append(('DTC', DecisionTreeClassifier()))
 models.append(('NB', GaussianNB()))
-models.append(('SVM', SVC()))
-
+models.append(('SVC', SVC()))
+###models.append(('MLPC', MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)))
 
 # evaluate each model in turn
 results = []
@@ -151,13 +146,25 @@ ax.set_xticklabels(names)"""
 #######plt.show()
 
 # Make predictions on validation dataset w model of your choice
-print("\nLogisticRegression:")
 model = LogisticRegression()
+print('using model: ' + str(model))
+
 model.fit(X_train, Y_train)
 predictions = model.predict(X_validation)
+print('\naccuracy score:')
 print(accuracy_score(Y_validation, predictions))
+print('\nconfusion matrix:')
 print(confusion_matrix(Y_validation, predictions))
-print(classification_report(Y_validation, predictions))
+
+
+
+labelEncoder = labelEncoders['Class Name']
+label_count = len(labelEncoder.classes_)
+target_strings = labelEncoder.inverse_transform(np.arange(label_count))
+
+
+print('\nclassification report:')
+print(classification_report(Y_validation, predictions, target_names=target_strings))
 
 print("\npredictions:")
 print(predictions)
@@ -167,11 +174,11 @@ print(Y_validation)
 
 print("\nspot check record: " + str(spot_check_record))
 print("spot check single instance prediction:")
-print(model.predict(single_instance_features))
+print(labelEncoder.inverse_transform(model.predict(single_instance_features)))
+
 
 print("spot check single instance answer:")
-print(single_instance_class)
-
+print(labelEncoder.inverse_transform(single_instance_class))
 
 
 
