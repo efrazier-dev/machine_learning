@@ -19,11 +19,9 @@ from sklearn.neural_network import MLPClassifier
 from sklearn import preprocessing
 import numpy as np
 
-# https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records
+# https://archive.ics.uci.edu/ml/datasets/Adult
 # Load dataset
-#url = "house-votes-84.data"
-
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
+url = "adult_removed_unknowns.data"
 
 dataset = pandas.read_csv(url, sep=',')
 
@@ -40,7 +38,7 @@ print(dataset.describe())
 print('\n\n')
 
 # class distribution
-print(dataset.groupby('Class Name').size())
+print(dataset.groupby('salary').size())
 print('\n\n')
 
 # dict of label encoders
@@ -75,9 +73,9 @@ dataset.drop([spot_check_record], inplace=True)
 
 
 # single instance features
-single_instance_features = single_instance.values[:,1:]
+single_instance_features = single_instance.values[:,:-1]
 # single instance classification
-single_instance_class = single_instance.values[:,0]
+single_instance_class = single_instance.values[:,-1]
 
 
 
@@ -98,12 +96,12 @@ single_instance_class = single_instance.values[:,0]
 array = dataset.values
 
 # features
-X = array[:,1:]
+X = array[:,:-1]
 
 # classifications
-Y = array[:,0]
+Y = array[:,-1]
 
-validation_size = 0.20
+validation_size = 0.33
 seed = 7
 
 # holdout cross validation
@@ -121,7 +119,7 @@ models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
 models.append(('DTC', DecisionTreeClassifier()))
 models.append(('NB', GaussianNB()))
-models.append(('SVC', SVC()))
+##models.append(('SVC', SVC()))
 ##models.append(('MLPC', MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)))
 
 # evaluate each model in turn
@@ -160,7 +158,7 @@ print(confusion_matrix(Y_validation, predictions))
 
 
 
-labelEncoder = labelEncoders['Class Name']
+labelEncoder = labelEncoders['salary']
 label_count = len(labelEncoder.classes_)
 target_strings = labelEncoder.inverse_transform(np.arange(label_count))
 
