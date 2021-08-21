@@ -21,9 +21,9 @@ import numpy as np
 
 # https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records
 # Load dataset
-#url = "house-votes-84.data"
+url = "house-votes-84.data"
 
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
+#url = "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
 
 dataset = pandas.read_csv(url, sep=',')
 
@@ -61,7 +61,21 @@ def handle_non_numerical_data(df):
     return df
 
 
+# helps ensure classification report has correct labels
+def get_report_labels():
+    labelEncoder = labelEncoders['Class Name']
+    label_count = len(labelEncoder.classes_)
+    all_labels = labelEncoder.inverse_transform(np.arange(label_count))
 
+    predicted_labels = []
+
+    distinct_values = pandas.unique(pandas.Series(predictions))
+    for distinct_value in distinct_values:
+        predicted_labels.append(all_labels[distinct_value])
+
+    return predicted_labels    
+    
+    
 
 dataset = handle_non_numerical_data(dataset)
 
@@ -83,8 +97,8 @@ single_instance_class = single_instance.values[:,0]
 
 
 # box and whisker plots
-####dataset.plot(kind='box', subplots=True, layout=(2,2), sharex=False, sharey=False)
-####plt.show()
+dataset.plot(kind='box', subplots=True, layout=(5,4), sharex=False, sharey=False)
+plt.show()
 
 # histograms
 #####dataset.hist()
@@ -159,20 +173,18 @@ print('\nconfusion matrix:')
 print(confusion_matrix(Y_validation, predictions))
 
 
-
-labelEncoder = labelEncoders['Class Name']
-label_count = len(labelEncoder.classes_)
-target_strings = labelEncoder.inverse_transform(np.arange(label_count))
-
+report_labels = get_report_labels()
 
 print('\nclassification report:')
-print(classification_report(Y_validation, predictions, target_names=target_strings))
+print(classification_report(Y_validation, predictions, target_names=report_labels))
 
 print("\npredictions:")
 print(predictions)
 
 print("\nY_validation:")
 print(Y_validation)
+
+labelEncoder = labelEncoders['Class Name']
 
 print("\nspot check record: " + str(spot_check_record))
 print("spot check single instance prediction:")
