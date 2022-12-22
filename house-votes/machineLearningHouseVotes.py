@@ -23,8 +23,6 @@ import numpy as np
 # Load dataset
 url = "house-votes-84.data"
 
-#url = "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
-
 dataset = pandas.read_csv(url, sep=',')
 
 # instances (rows) and attributes (columns)
@@ -40,7 +38,7 @@ print(dataset.describe())
 print('\n\n')
 
 # class distribution
-print(dataset.groupby('Class Name').size())
+print(dataset.groupby('party').size())
 print('\n\n')
 
 # dict of label encoders
@@ -63,7 +61,7 @@ def handle_non_numerical_data(df):
 
 # helps ensure classification report has correct labels
 def get_report_labels():
-    labelEncoder = labelEncoders['Class Name']
+    labelEncoder = labelEncoders['party']
     label_count = len(labelEncoder.classes_)
     all_labels = labelEncoder.inverse_transform(np.arange(label_count))
 
@@ -184,7 +182,7 @@ print(predictions)
 print("\nY_validation:")
 print(Y_validation)
 
-labelEncoder = labelEncoders['Class Name']
+labelEncoder = labelEncoders['party']
 
 print("\nspot check record: " + str(spot_check_record))
 print("spot check single instance prediction:")
